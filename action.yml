@@ -58,6 +58,7 @@ runs:
       run: git push --no-verify --force --set-upstream origin swatinem/rust-maintain
 
     - name: edit existing open pull request
+      shell: bash
       id: edit
       # Don't fail job if we need to open new PR
       continue-on-error: true
@@ -73,6 +74,7 @@ runs:
         gh pr edit swatinem/rust-maintain --body-file body.md --repo $GITHUB_REPOSITORY
 
     - name: open new pull request
+      shell: bash
       # Only run if there wasn't an existing PR
       if: steps.edit.outcome != 'success'
       env:
