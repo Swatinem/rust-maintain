@@ -1,0 +1,83 @@
+name: "Maintain Rust"
+description: "A GitHub Action to maintain Rust workspaces"
+author: "Arpad Borsos <swatinem@swatinem.de>"
+inputs:
+  toolchain:
+    description: "The Rust Toolchain to use"
+    required: false
+    default: "nightly"
+  token:
+    description: "A valid GITHUB_TOKEN with which to push new commits and open PRs"
+    required: true
+    default: "${{ github.token }}"
+branding:
+  icon: "arrow-up-circle"
+  color: "green"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: install rust toolchain
+      shell: bash
+      run: |
+        rustup toolchain install ${{ inputs.toolchain }} --no-self-update --component clippy --component rustfmt
+        rustup default ${{ inputs.toolchain }}
+
+    - name: cargo update
+      shell: bash
+      run: cargo update 2>&1 | sed '/crates.io index/d' | tee -a /tmp/cargo-update.log
+
+    - name: cargo clippy --fix
+      shell: bash
+      run: cargo clippy --workspace --tests --examples --fix --allow-dirty
+
+    - name: cargo fmt
+      shell: bash
+      run: cargo fmt
+
+    - name: craft PR body
+      shell: bash
+      run: |
+        echo 'Ran `cargo update` and applied `clippy --fix`.' > /tmp/body.md
+        echo '' >> /tmp/body.md
+        echo 'Dependency updates:' >> /tmp/body.md
+        echo '```txt' >> /tmp/body.md
+        cat /tmp/cargo-update.log >> /tmp/body.md
+        echo '```' >> /tmp/body.md
+
+    - name: commit
+      shell: bash
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git switch --force-create swatinem/rust-maintain
+        git commit --all --no-verify --message "Crate maintenance"
+
+    - name: push
+      shell: bash
+      run: git push --no-verify --force --set-upstream origin swatinem/rust-maintain
+
+    - name: edit existing open pull request
+      shell: bash
+      id: edit
+      # Don't fail job if we need to open new PR
+      continue-on-error: true
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        # Exit with error if PR is closed
+        STATE=$(gh pr view swatinem/rust-maintain --repo $GITHUB_REPOSITORY --json state --jq '.state')
+        if [[ "$STATE" != "OPEN" ]]; then
+          exit 1
+        fi
+
+        gh pr edit swatinem/rust-maintain --body-file /tmp/body.md --repo $GITHUB_REPOSITORY
+
+    - name: open new pull request
+      shell: bash
+      # Only run if there wasn't an existing PR
+      if: steps.edit.outcome != 'success'
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: gh pr create --title "Crate maintenance" --body-file /tmp/body.md --repo $GITHUB_REPOSITORY
