@@ -26,11 +26,12 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: Swatinem/rust-maintain@master # you should use a *pinned commit*
+      # you should use a *pinned commit*:
+      - uses: Swatinem/rust-maintain@d30335b4b3c4c7a19c42ca2e25e3d73500f22098
 ```
 
 After running, the action will open a pull request with crate updates and `clippy` auto-fixes,
-like [this one](https://github.com/Swatinem/rust-maintain/pull/1).
+like [this one](https://github.com/Swatinem/rust-maintain/pull/2).
 
 ## Permissions / Security
 
