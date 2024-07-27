@@ -9,6 +9,7 @@ inputs:
   token:
     description: "A valid GITHUB_TOKEN with which to push new commits and open PRs"
     required: true
+    default: "${{ github.token }}"
 branding:
   icon: "arrow-up-circle"
   color: "green"
