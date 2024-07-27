@@ -20,7 +20,7 @@ runs:
     - name: install rust toolchain
       shell: bash
       run: |
-        rustup toolchain install --no-self-update ${{ inputs.toolchain }}
+        rustup toolchain install ${{ inputs.toolchain }} --no-self-update --component clippy --component rustfmt
         rustup default ${{ inputs.toolchain }}
 
     - name: cargo update
