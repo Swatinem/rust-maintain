@@ -51,7 +51,7 @@ runs:
         git config user.name github-actions
         git config user.email github-actions@github.com
         git switch --force-create swatinem/rust-maintain
-        git commit -all --no-verify --message "Crate maintenance"
+        git commit --all --no-verify --message "Crate maintenance"
 
     - name: push
       shell: bash
