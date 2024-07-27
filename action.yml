@@ -71,7 +71,7 @@ runs:
           exit 1
         fi
 
-        gh pr edit swatinem/rust-maintain --body-file body.md --repo $GITHUB_REPOSITORY
+        gh pr edit swatinem/rust-maintain --body-file /tmp/body.md --repo $GITHUB_REPOSITORY
 
     - name: open new pull request
       shell: bash
@@ -79,4 +79,4 @@ runs:
       if: steps.edit.outcome != 'success'
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
-      run: gh pr create --title "Crate maintenance" --body-file body.md --repo $GITHUB_REPOSITORY
+      run: gh pr create --title "Crate maintenance" --body-file /tmp/body.md --repo $GITHUB_REPOSITORY
